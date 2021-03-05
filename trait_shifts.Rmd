@@ -1,0 +1,33 @@
+---
+title: "Shifts and traits"
+output:
+    github_document: default
+---
+
+## Set up
+```{r}
+require(here)
+require(data.table)
+require(ggplot2)
+
+bs <- fread(here('data', 'Bioshifts', 'BioShifts.csv'))
+tsm <- fread(here('data', 'pinsky_etal_2019', 'warmingtolerance_byspecies.csv'))
+```
+
+## Merge
+```{r}
+bs[, species_binom := Species]
+tsm[, species_binom := paste(Genus, Species)]
+
+dat <- merge(bs[, .(species_binom, Kingdom, Phylum, Order, Class, Family, Genus, Ecosystem, Gradient, Position, ShiftR, Unit)], 
+             tsm[, .(species_binom, tsm = tsm_favorableGHCND95)])
+```
+
+## Plot
+```{r}
+ggplot(dat, aes(abs(ShiftR), tsm, color = Ecosystem, shape = Position)) +
+    geom_point()
+```
+
+
+
