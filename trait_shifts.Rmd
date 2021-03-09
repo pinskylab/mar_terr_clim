@@ -12,6 +12,16 @@ require(ggplot2)
 
 tsm <- fread(here('data', 'pinsky_etal_2019', 'warmingtolerance_byspecies.csv'))
 crawl <- fread('https://raw.githubusercontent.com/pinskylab/climate_community_crossrealm/master/data/crawling/Crawling_speeds.csv') # crawling speeds from the literature
+bs <- fread(here('data', 'Bioshifts', 'BioShifts.csv'))
+
+```
+
+## Add shift rate
+```{r}
+bs[, species_binom := Species]
+tsm[, species_binom := paste(Genus, Species)]
+dat <- merge(bs[, .(species_binom, Kingdom, Phylum, Order, Class, Family, Genus, Ecosystem, Gradient, Position, ShiftR, Unit)],
+             tsm[, .(species_binom, tsm = tsm_favorableGHCND95)])
 ```
 
 ## Add movement speed
@@ -85,6 +95,10 @@ tsm[mode == 'stationary', speed := 0]
 
 ## Plot
 ```{r}
+ggplot(dat[Unit == 'km/year',], aes(abs(ShiftR), tsm, color = Ecosystem, shape = Position)) +
+    geom_point() +
+    labs(x = 'abs(ShiftR) km/year') + 
+    geom_text(aes(label=species_binom),hjust=0.5, vjust=0, size = 2)
 ggplot(tsm, aes(speed, tsm_favorableGHCND95, color = Realm)) +
     geom_point()
 ```
